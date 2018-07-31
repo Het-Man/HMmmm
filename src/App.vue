@@ -23,11 +23,12 @@
                             <a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">退出</font></font></a>
                             <strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">|</font></font></strong>
                         </span>
-                        <a href="" class="">
+                        <router-link to="/buycart">
                             <i class="iconfont icon-cart"></i><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">购物车（
-                            </font><span id="shoppingCartCount"><span><font style="vertical-align: inherit;">4</font></span></span><font style="vertical-align: inherit;">）</font></font><span id="shoppingCartCount">
+                            </font><span id="shoppingCartCount"><span><font style="vertical-align: inherit;">{{this.$store.getters.totalCount}}</font></span></span><font style="vertical-align: inherit;">）</font></font><span id="shoppingCartCount">
                                 <span><font style="vertical-align: inherit;"></font></span>
-                            </span><font style="vertical-align: inherit;"></font></a>
+                            </span><font style="vertical-align: inherit;"></font>
+                        </router-link>
                     </div>
                 </div>
             </div>

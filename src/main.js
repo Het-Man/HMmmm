@@ -4,6 +4,7 @@ import App from './App.vue'
 //引入首页组件
 import index from './components/index.vue'
 import goodsInfo from './components/goodsInfo.vue'
+import buycart from './components/buycart.vue'
 //引入路由
 import VueRouter from 'vue-router'
 //导入ui框架
@@ -23,6 +24,9 @@ import 'iview/dist/styles/iview.css';
 import moment from 'moment'
 //引入axios 目的是让所有组件都可以使用
 import axios from "axios";
+//引入vuex
+import Vuex from 'vuex'
+
 
 //设置基地址
 axios.defaults.baseURL = 'http://47.106.148.205:8899';
@@ -44,7 +48,8 @@ Vue.use(VueLazyload,{
 });
 //使用iview
 Vue.use(iView);
-
+//引入vuex中间件
+Vue.use(Vuex)
 const router = new VueRouter({
   routes:[
       { 
@@ -57,6 +62,10 @@ const router = new VueRouter({
       {
         path: '/goodsInfo/:id',
         component: goodsInfo
+      },
+      {
+        path: '/buycart/',
+        component: buycart
       }
   ]
 })
@@ -67,7 +76,53 @@ Vue.filter('cutTime',function(value){
 });
 
 
+//判断数据是否存在
+let buyList = JSON.parse(window.localStorage.getItem('buyList')) || {}
 
+const store = new Vuex.Store({
+  state: {
+    // buyList:{}
+    buyList
+  },
+  getters:{
+    totalCount(state){
+      let num = 0;
+
+      for (const key in state.buyList) {
+
+        num += parseInt(state.buyList[key])
+      }
+
+      return num
+    }
+
+  },
+  mutations: {
+    /*
+    info{
+      goodId:xxx,
+      goodNum:xxx
+    }
+    
+    */
+    buyGood (state,info) {
+      //如果有就累加
+      if(state.buyList[info.goodId]){
+
+        let oldNum = parseInt(state.buyList[info.goodId]);
+
+        oldNum += parseInt(info.goodNum) 
+
+        state.buyList[info.goodId] = oldNum
+      }else{
+        //没有就赋值 这种方法 vuex 不会跟踪
+        // state.buyList[info.goodId] = info.goodNum
+        //Vue.set(obj, 'newProp', 123) 需要使用这种方法
+        Vue.set(state.buyList, info.goodId, parseInt(info.goodNum));
+      }
+    }
+  }
+})
 
 Vue.config.productionTip = false
 
@@ -77,5 +132,11 @@ new Vue({
   // 挂载到vue
   router,
   // 渲染 App组件
-  render: h => h(App)
+  render: h => h(App),
+  store
 })
+
+//数据常驻 页面关闭 以及页面刷新
+window.onbeforeunload = function (){
+  window.localStorage.setItem('buyList',JSON.stringify(store.state.buyList));
+}
