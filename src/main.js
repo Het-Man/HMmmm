@@ -5,6 +5,8 @@ import App from './App.vue'
 import index from './components/index.vue'
 import goodsInfo from './components/goodsInfo.vue'
 import buycart from './components/buycart.vue'
+import payOrder from './components/payOrder.vue'
+import login from './components/login.vue'
 //引入路由
 import VueRouter from 'vue-router'
 //导入ui框架
@@ -32,7 +34,8 @@ import Vuex from 'vuex'
 axios.defaults.baseURL = 'http://47.106.148.205:8899';
 //挂载到Vue原型上->vue实例化出来的独享
 Vue.prototype.axios = axios;
-
+// 设置带上cookie
+axios.defaults.withCredentials = true
 
 
 //element中间件
@@ -66,6 +69,14 @@ const router = new VueRouter({
       {
         path: '/buycart/',
         component: buycart
+      },
+      {
+        path: '/payOrder/',
+        component: payOrder
+      },
+      {
+        path: '/login/',
+        component: login
       }
   ]
 })
@@ -82,7 +93,9 @@ let buyList = JSON.parse(window.localStorage.getItem('buyList')) || {}
 const store = new Vuex.Store({
   state: {
     // buyList:{}
-    buyList
+    buyList,
+    //判断是否登陆
+    isLogin:false
   },
   getters:{
     totalCount(state){
@@ -105,6 +118,7 @@ const store = new Vuex.Store({
     }
     
     */
+   //我们点击加入购物车 把对应的id以及数量存储在vux里的buyList
     buyGood (state,info) {
       //如果有就累加
       if(state.buyList[info.goodId]){
@@ -120,9 +134,60 @@ const store = new Vuex.Store({
         //Vue.set(obj, 'newProp', 123) 需要使用这种方法
         Vue.set(state.buyList, info.goodId, parseInt(info.goodNum));
       }
+    },
+    //当购物车的商品件数更改的时候 头顶的购物车也要同步更新 
+    //我们这里直接重新赋值比较方便
+    changeCount(state,info){
+      state.buyList[info.goodId] = info.goodNum;
+    },
+    //根据id删除数据
+    delGoodById(state,id){
+      Vue.delete(state.buyList,id)
+    },
+    //修改登录状态
+    changeLogin(state,isLogin){
+      state.isLogin = isLogin
+    },
+    //修改来时的路由
+    rememberFromPath(state,path){
+      state.fromPath = path
     }
+    
   }
 })
+
+// 注册路由守卫(每次路由跳转时 增加的过滤规则)
+// 🥖🥖🥖🥖🥖🥖🥖🥖🥖🥖
+router.beforeEach((to, from, next) => {
+  // 从哪来
+  // console.log(from);
+  // 保存数据
+  store.commit('rememberFromPath',from.path);
+  // 去订单支付页
+  if(to.path=='/payOrder'){
+    axios
+    .get("/site/account/islogin")
+    .then(response => {
+      // console.log(response);
+      if (response.data.code == "nologin") {
+        // console.log("没登录");
+        // 打到登录页
+        next('/login');
+      } else {
+        // 登陆了 继续执行即可
+        next();
+         
+      }
+    })
+    .catch(err => {
+      // console.log(err);
+    });
+  }else{
+    // 如果去的不是订单支付页 直接可以访问
+    next();
+  }
+});
+
 
 Vue.config.productionTip = false
 
