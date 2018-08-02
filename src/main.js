@@ -7,6 +7,7 @@ import goodsInfo from './components/goodsInfo.vue'
 import buycart from './components/buycart.vue'
 import payOrder from './components/payOrder.vue'
 import login from './components/login.vue'
+import orderInfo from './components/orderInfo.vue'
 //引入路由
 import VueRouter from 'vue-router'
 //导入ui框架
@@ -71,12 +72,16 @@ const router = new VueRouter({
         component: buycart
       },
       {
-        path: '/payOrder/',
+        path: '/payOrder/:ids',
         component: payOrder
       },
       {
         path: '/login/',
         component: login
+      },
+      {
+        path:'/orderInfo/:orderid',
+        component:orderInfo
       }
   ]
 })
@@ -164,11 +169,11 @@ router.beforeEach((to, from, next) => {
   // 保存数据
   store.commit('rememberFromPath',from.path);
   // 去订单支付页
-  if(to.path=='/payOrder'){
+  if(to.path.indexOf('/payOrder') != -1){
     axios
     .get("/site/account/islogin")
     .then(response => {
-      // console.log(response);
+      console.log(response);
       if (response.data.code == "nologin") {
         // console.log("没登录");
         // 打到登录页
@@ -198,7 +203,14 @@ new Vue({
   router,
   // 渲染 App组件
   render: h => h(App),
-  store
+  store,
+  //直接判断是否登录让 app.vue 头部的登录状态判断
+  beforeCreate() {
+    axios.get('site/account/islogin')
+      .then(response=>{
+        store.state.isLogin = response.data.code == 'logined'
+      })
+  },
 })
 
 //数据常驻 页面关闭 以及页面刷新

@@ -15,7 +15,7 @@
                         <a target="_blank" href="#"></a>
                     </div>
                     <div id="menu" class="right-box">
-                        <span v-if="$store.state.isLogin == false">
+                        <span v-if="!$store.state.isLogin">
                             <router-link to="/login">
                                 登录
                             </router-link>

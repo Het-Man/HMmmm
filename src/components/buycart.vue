@@ -55,7 +55,7 @@
                                     <th width="54" align="center">操作</th>
                                 </tr>
                                 <!-- 没有商品的时候显示 -->
-                                <tr v-if="message&&message.length == 0">
+                                <tr v-if="message.length == 0">
                                     <td colspan="10">
                                         <div class="msg-tips">
                                             <div class="icon warning">
@@ -105,9 +105,11 @@
                     <div class="cart-foot clearfix">
                         <div class="right-box">
                             <button class="button" onclick="javascript:location.href='/index.html';">继续购物</button>
-                            <router-link to="/payOrder">
+                            <!-- <router-link to="/payOrder">
                                 <button class="submit" >立即结算</button>
-                            </router-link>
+                            </router-link> -->
+                            <button class="submit" @click='toPayOrder' >立即结算</button>
+                            
                         </div>
                     </div>
                     <!--购物车底部-->
@@ -141,7 +143,7 @@ export default {
   name: "buycart",
   data: function() {
     return {
-      message: undefined,
+      message: [],
       isShowModal: false,
       delIndex: 0
     };
@@ -235,6 +237,30 @@ export default {
           this.message.splice(this.delIndex,1);
           //模态框取消显示
           this.isShowModal = false;
+      },
+      toPayOrder(){
+        //声明一个变量接收id
+        let ids = '';
+        //拿到选中的id
+        this.message.forEach(v=>{
+            if(v.selected) {
+                ids += v.id;
+                ids +=',';
+            }
+        })
+        //如果为空 提示用户 并返回
+        if(ids == ''){
+            this.$message({
+                message:'不要吝啬你的钱包选一个吧',
+                duration:1000
+            })
+            return
+        }
+
+        //多于的逗号去掉
+        ids = ids.slice(0,-1);
+
+        this.$router.push('/payOrder/'+ids)
       }
   }
 };
